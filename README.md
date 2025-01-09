@@ -1,9 +1,3 @@
-# Library_API_BookManagement
-
-Berikut adalah README yang diperbarui, tanpa menggunakan Docker, tetapi tetap memberikan petunjuk jelas untuk menjalankan aplikasi menggunakan **PHP CLI server**.
-
----
-
 # **Library Management System - Book Management Service**
 
 Proyek ini adalah **Book Management Service** dari sistem manajemen perpustakaan, dibangun menggunakan **CodeIgniter 4 (CI4)**. Layanan ini memungkinkan admin perpustakaan untuk mengelola koleksi buku, seperti menambahkan, mengedit, melihat, dan menghapus buku. Sistem ini juga dilengkapi autentikasi dan otorisasi untuk memastikan keamanan akses.
@@ -52,18 +46,12 @@ Proyek ini adalah **Book Management Service** dari sistem manajemen perpustakaan
    ```
    Kredensial database default sudah diatur untuk menggunakan database yang telah di-*deploy*. Anda tidak perlu mengubahnya kecuali jika ingin menggunakan database Anda sendiri.
 
-4. **Migrasi Database**
-   Jalankan migrasi untuk membuat tabel yang diperlukan:
-   ```bash
-   php spark migrate
-   ```
-
-5. **Jalankan Server**
+4. **Jalankan Server**
    Gunakan server bawaan PHP untuk menjalankan aplikasi:
    ```bash
    php spark serve
    ```
-   Aplikasi dapat diakses di `http://localhost:8080`.
+   Aplikasi dapat diakses di `http://localhost:8080/books`.
 
 ---
 
