@@ -1,60 +1,126 @@
-# CodeIgniter 4 Framework
+# **Library Management System - Book Management Service**
 
-## What is CodeIgniter?
+Proyek ini adalah **Book Management Service** dari sistem manajemen perpustakaan, dibangun menggunakan **CodeIgniter 4 (CI4)**. Layanan ini memungkinkan admin perpustakaan untuk mengelola koleksi buku, seperti menambahkan, mengedit, melihat, dan menghapus buku. Sistem ini juga dilengkapi autentikasi dan otorisasi untuk memastikan keamanan akses.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+---
 
-This repository holds the distributable version of the framework.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+## **Fitur**
+- **Authentication & Authorization**:
+  - Pengguna harus login untuk mengakses layanan.
+  - Hanya admin yang dapat menambah, mengedit, dan menghapus buku.
+- **Manajemen Buku**:
+  - Tambahkan, ubah, lihat, dan hapus data buku.
+  - Data buku meliputi judul, pengarang, kategori, deskripsi, dan status (*available* atau *borrowed*).
+- **Endpoint RESTful**:
+  - CRUD operasi sesuai dengan standar RESTful API.
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+---
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+## **Persyaratan Sistem**
+- **PHP** versi 7.4 atau lebih baru dengan ekstensi:
+  - `pdo`, `pdo_mysql`, `mbstring`, `json`
+- **Composer** untuk pengelolaan dependensi.
+- **MySQL** sebagai database.
+- **PHP CLI server** untuk menjalankan aplikasi (tidak perlu XAMPP).
 
-## Important Change with index.php
+---
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+## **Langkah-Langkah Instalasi**
+1. **Clone Repository**
+   Clone repository ini ke komputer lokal Anda:
+   ```bash
+   git clone https://github.com/your-repository/library-book-management.git
+   cd library-book-management
+   ```
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+2. **Install Dependensi**
+   Pastikan Composer sudah terinstal, lalu jalankan:
+   ```bash
+   composer install
+   ```
 
-**Please** read the user guide for a better explanation of how CI4 works!
+3. **Konfigurasikan File `.env`**
+   Salin file `.env.example` menjadi `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+   Kredensial database default sudah diatur untuk menggunakan database yang telah di-*deploy*. Anda tidak perlu mengubahnya kecuali jika ingin menggunakan database Anda sendiri.
 
-## Repository Management
+4. **Jalankan Server**
+   Gunakan server bawaan PHP untuk menjalankan aplikasi:
+   ```bash
+   php spark serve
+   ```
+   Aplikasi dapat diakses di `http://localhost:8080/books`.
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+---
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+## **Struktur Endpoint API**
 
-## Contributing
+### **Authentication**
+- `POST /authenticate` - Login pengguna.
+- `GET /logout` - Logout pengguna.
 
-We welcome contributions from the community.
+### **Books**
+- `GET /books` - Menampilkan daftar buku.
+- `POST /books/store` - Menambahkan buku baru (*hanya admin*).
+- `GET /books/edit/{id}` - Mengedit data buku (*hanya admin*).
+- `POST /books/update/{id}` - Memperbarui data buku (*hanya admin*).
+- `DELETE /books/{id}` - Menghapus buku (*hanya admin*).
 
-Please read the [*Contributing to CodeIgniter*](https://github.com/codeigniter4/CodeIgniter4/blob/develop/CONTRIBUTING.md) section in the development repository.
+---
 
-## Server Requirements
+## **Contoh Request**
+### **Menghapus Buku**
+**Request:**
+```bash
+DELETE /books/1 HTTP/1.1
+Host: localhost:8080
+Authorization: Bearer <your-session-token>
+```
 
-PHP version 8.1 or higher is required, with the following extensions installed:
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Book deleted successfully."
+}
+```
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+---
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - If you are still using PHP 7.4 or 8.0, you should upgrade immediately.
-> - The end of life date for PHP 8.1 will be December 31, 2025.
+## **File yang Disertakan**
+- **Kode Aplikasi**: Semua file di folder `app/`.
+- **File Konfigurasi Penting**:
+  - `composer.json` dan `composer.lock`
+  - `.env.example`
+- **File Migrasi Database**: Terletak di `app/Database/Migrations/`.
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+**File yang Tidak Disertakan:**
+- `.env` asli untuk melindungi informasi sensitif.
+- Folder `writable/` yang berisi log dan cache runtime.
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+---
+
+## **Akses ke Aplikasi**
+- **Database**:
+  - Host: `mysql-1e73275c-tst-01.h.aivencloud.com`
+  - Port: `21959`
+  - Nama Database: `defaultdb`
+  - Username: `avnadmin`
+  - Password: `AVNS__A_pxyQwbTPWRVRmbcF`
+- **Aplikasi Dapat Dijalankan di `http://localhost:8080`**
+
+---
+
+## **Demo Video**
+Demo cara kerja aplikasi ini dapat ditemukan di YouTube:
+- [Link Video Demo](https://youtu.be/your-demo-video-link)
+
+---
+
+## **Kontributor**
+- **[Muhammad Yaafi Wasesa Putra]**: Layanan Manajemen Buku
+
+
+>>>>>>> 690a022f81ba0de42ddbb83229e1bcba986cc211
