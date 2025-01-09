@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Books</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <h1 class="text-center">Books Management</h1>
+        <div id="book-list" class="row mt-4"></div>
+        <div class="card mt-5 shadow">
+            <div class="card-body">
+                <h4>Add New Book</h4>
+                <form id="book-form">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" id="title" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="author" class="form-label">Author</label>
+                        <input type="text" id="author" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <input type="text" id="category" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="stock" class="form-label">Stock</label>
+                        <input type="number" id="stock" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Add Book</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('You must log in first!');
+            window.location.href = '/index.html';
+        }
+
+        async function fetchBooks() {
+            const response = await fetch('/books', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const books = await response.json();
+            const bookList = document.getElementById('book-list');
+            bookList.innerHTML = books.map(book => `
+                <div class="col-md-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5>${book.title}</h5>
+                            <p>Author: ${book.author}<br>Category: ${book.category}<br>Stock: ${book.stock}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('book-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const data = {
+                title: document.getElementById('title').value,
+                author: document.getElementById('author').value,
+                category: document.getElementById('category').value,
+                stock: document.getElementById('stock').value,
+            };
+
+            const response = await fetch('/books', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert('Book added successfully');
+                fetchBooks();
+            } else {
+                alert(result.message || 'Failed to add book');
+            }
+        });
+
+        fetchBooks();
+    </script>
+</body>
+</html>

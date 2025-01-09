@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviews</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <h1 class="text-center">Reviews Management</h1>
+
+        <!-- Review List -->
+        <div id="review-list" class="row mt-4"></div>
+
+        <!-- Add Review Form -->
+        <div class="card mt-5 shadow">
+            <div class="card-body">
+                <h4>Add New Review</h4>
+                <form id="review-form">
+                    <div class="mb-3">
+                        <label for="book_id" class="form-label">Book ID</label>
+                        <input type="number" id="book_id" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="user_id" class="form-label">User ID</label>
+                        <input type="number" id="user_id" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="rating" class="form-label">Rating (1-5)</label>
+                        <input type="number" id="rating" class="form-control" min="1" max="5" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="review_text" class="form-label">Review Text</label>
+                        <textarea id="review_text" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success">Add Review</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('You must log in first!');
+            window.location.href = '/index.html';
+        }
+        async function fetchReviews() {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/reviews', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const reviews = await response.json();
+            const reviewList = document.getElementById('review-list');
+            reviewList.innerHTML = reviews.map(review => `
+                <div class="col-md-6">
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-body">
+                            <h5>Review for Book ID: ${review.book_id}</h5>
+                            <p>User ID: ${review.user_id}</p>
+                            <p>Rating: ${review.rating}</p>
+                            <p>${review.review_text}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('review-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const token = localStorage.getItem('token');
+            const data = {
+                book_id: document.getElementById('book_id').value,
+                user_id: document.getElementById('user_id').value,
+                rating: document.getElementById('rating').value,
+                review_text: document.getElementById('review_text').value
+            };
+
+            const response = await fetch('/reviews', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                alert('Review added successfully');
+                fetchReviews();
+            } else {
+                alert('Failed to add review');
+            }
+        });
+
+        // Load reviews on page load
+        fetchReviews();
+    </script>
+</body>
+</html>
