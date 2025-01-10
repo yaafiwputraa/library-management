@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\BookModel;
+use App\Models\BorrowerModel;
 
 class BooksController extends BaseController
 {
@@ -15,17 +16,20 @@ class BooksController extends BaseController
 
     public function create()
     {
-        if (session()->get('user')['role'] !== 'admin') {
-            return redirect()->to('/unauthorized');
-        }
-
-        return view('books/create');
+        return view('books/create'); // Hanya admin, middleware sudah menangani
     }
 
     public function store()
     {
-        if (session()->get('user')['role'] !== 'admin') {
-            return redirect()->to('/unauthorized');
+        $validation = $this->validate([
+            'title' => 'required|min_length[3]',
+            'author' => 'required|min_length[3]',
+            'description' => 'permit_empty|max_length[255]',
+            'category' => 'required|min_length[3]',
+        ]);
+
+        if (!$validation) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
         $bookModel = new BookModel();
@@ -33,102 +37,91 @@ class BooksController extends BaseController
             'title' => $this->request->getPost('title'),
             'author' => $this->request->getPost('author'),
             'description' => $this->request->getPost('description'),
+            'category' => $this->request->getPost('category'),
+            'status' => 'available',
         ]);
 
-        return redirect()->to('/books');
+        return redirect()->to('/books')->with('success', 'Book added successfully.');
     }
 
     public function edit($id)
-{
-    if (session()->get('user')['role'] !== 'admin') {
-        return redirect()->to('/unauthorized');
+    {
+        $bookModel = new BookModel();
+        $book = $bookModel->find($id);
+
+        if (!$book) {
+            return redirect()->to('/books')->with('error', 'Book not found.');
+        }
+
+        return view('books/edit', ['book' => $book]);
     }
 
-    $bookModel = new BookModel();
-    $book = $bookModel->find($id);
+    public function update($id)
+    {
+        $validation = $this->validate([
+            'title' => 'required|min_length[3]',
+            'author' => 'required|min_length[3]',
+            'description' => 'permit_empty|max_length[255]',
+            'category' => 'required|min_length[3]',
+            'status' => 'required|in_list[available,borrowed]',
+        ]);
 
-    if (!$book) {
-        return redirect()->to('/books')->with('error', 'Book not found.');
-    }
+        if (!$validation) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $this->validator->getErrors(),
+            ]);
+        }
 
-    // Kirim data buku (termasuk `status` dan `category`) ke view
-    return view('books/edit', ['book' => $book]);
-}
+        $bookModel = new BookModel();
+        $bookModel->update($id, [
+            'title' => $this->request->getPost('title'),
+            'author' => $this->request->getPost('author'),
+            'description' => $this->request->getPost('description'),
+            'category' => $this->request->getPost('category'),
+            'status' => $this->request->getPost('status'),
+        ]);
 
-
-public function get($id)
-{
-    if (session()->get('user')['role'] !== 'admin') {
-        return $this->response->setJSON(['error' => 'Unauthorized'])->setStatusCode(403);
-    }
-
-    $bookModel = new BookModel();
-    $book = $bookModel->find($id);
-
-    if (!$book) {
-        return $this->response->setJSON(['error' => 'Book not found'])->setStatusCode(404);
-    }
-
-    return $this->response->setJSON($book);
-}
-
-// Update the update method to handle AJAX requests
-public function update($id)
-{
-    if (session()->get('user')['role'] !== 'admin') {
-        return $this->response->setJSON(['error' => 'Unauthorized'])->setStatusCode(403);
-    }
-
-    $validation = $this->validate([
-        'title' => 'required|min_length[3]',
-        'author' => 'required|min_length[3]',
-        'description' => 'permit_empty|max_length[255]',
-        'category' => 'required|min_length[3]',
-        'status' => 'required|in_list[available,borrowed]',
-    ]);
-
-    if (!$validation) {
         return $this->response->setJSON([
-            'success' => false,
-            'message' => 'Validation failed',
-            'errors' => $this->validator->getErrors()
+            'success' => true,
+            'message' => 'Book updated successfully',
         ]);
     }
 
-    $bookModel = new BookModel();
-    $bookModel->update($id, [
-        'title' => $this->request->getPost('title'),
-        'author' => $this->request->getPost('author'),
-        'description' => $this->request->getPost('description'),
-        'category' => $this->request->getPost('category'),
-        'status' => $this->request->getPost('status'),
-    ]);
+    public function delete($id)
+    {
+        $bookModel = new BookModel();
+        $book = $bookModel->find($id);
 
-    return $this->response->setJSON([
-        'success' => true,
-        'message' => 'Book updated successfully'
-    ]);
-}
+        if (!$book) {
+            return $this->response->setJSON(['error' => 'Book not found'])->setStatusCode(404);
+        }
 
+        $bookModel->delete($id);
 
-public function delete($id)
-{
-    if (session()->get('user')['role'] !== 'admin') {
-        return $this->response->setJSON(['error' => 'Unauthorized'])->setStatusCode(403);
+        return $this->response->setJSON(['success' => true, 'message' => 'Book deleted successfully.']);
     }
 
-    $bookModel = new BookModel();
-    $book = $bookModel->find($id);
+    public function trackBook($id)
+    {
+        $bookModel = new BookModel();
+        $borrowerModel = new BorrowerModel();
 
-    if (!$book) {
-        return $this->response->setJSON(['error' => 'Book not found'])->setStatusCode(404);
+        $book = $bookModel->find($id);
+        if (!$book) {
+            return $this->response->setJSON(['error' => 'Book not found'])->setStatusCode(404);
+        }
+
+        $borrower = null;
+        if ($book['status'] === 'borrowed') {
+            $borrower = $borrowerModel->where('book_id', $id)->first();
+        }
+
+        return $this->response->setJSON([
+            'book' => $book,
+            'is_borrowed' => $book['status'] === 'borrowed',
+            'borrower' => $borrower,
+        ]);
     }
-
-    $bookModel->delete($id);
-
-    return $this->response->setJSON(['success' => true, 'message' => 'Book deleted successfully.']);
-}
-
-
-
 }

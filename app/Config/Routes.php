@@ -5,11 +5,9 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
-$routes->get('/', 'HelloController::index'); // Root URL diarahkan ke HelloController
-$routes->get('/home', 'Home::index'); // URL `/home` diarahkan ke Home Controller
 
 
-
+$routes->get('/', 'AuthController::login');
 
 
 // Routes
@@ -34,10 +32,11 @@ $routes->get('/books/get/(:num)', 'BooksController::get/$1', ['filter' => 'auth:
 $routes->get('/register', 'AuthController::register');
 $routes->post('/register', 'AuthController::storeUser');
 
+$routes->get('/books/track/(:num)', 'BooksController::trackBook/$1');
 
-
-
-
-
+$routes->get('/borrowers', 'BorrowerController::listBorrowers'); // List semua peminjaman
+$routes->get('/borrowers/create', 'BorrowerController::create'); // Form untuk tambah peminjaman
+$routes->post('/borrowers', 'BorrowerController::store'); // Simpan data peminjaman
+$routes->post('/borrowers/return/(:num)', 'BorrowerController@returnBook/$1'); // Kembalikan buku
 
 
