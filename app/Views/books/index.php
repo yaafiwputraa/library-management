@@ -180,8 +180,14 @@
     
     // Get the book data
     fetch(`/books/get/${bookId}`)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(book => {
+            console.log('Book data:', book); // Debug
             document.getElementById('bookId').value = book.id;
             document.getElementById('editTitle').value = book.title;
             document.getElementById('editAuthor').value = book.author;
@@ -191,6 +197,10 @@
             
             // Show the modal
             document.getElementById('editModal').classList.remove('hidden');
+        })
+        .catch(error => {
+            console.error('Error fetching book:', error);
+            alert('Error fetching book data');
         });
 }
 
@@ -207,20 +217,27 @@ document.getElementById('editBookForm').addEventListener('submit', function(e) {
     
     fetch(`/books/update/${bookId}`, {
         method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
-            // Refresh the page or update the book display
             window.location.reload();
         } else {
-            alert('Error updating book: ' + data.message);
+            alert('Error updating book: ' + (data.message || 'Unknown error'));
         }
     })
     .catch(error => {
-        alert('Error updating book');
         console.error('Error:', error);
+        alert('Error updating book: ' + error.message);
     });
 });
 

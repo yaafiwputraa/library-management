@@ -47,8 +47,8 @@
                                     <i class="fas fa-book text-amber-700"></i>
                                 </div>
                             </div>
-                            <p class="text-2xl font-bold text-amber-500">247</p>
-                            <p class="text-sm text-amber-700 mt-2">+12 this month</p>
+                            <p class="text-2xl font-bold text-amber-500" id="total-books">-</p>
+                            <p class="text-sm text-amber-700 mt-2" id="books-added">Loading...</p>
                         </div>
                         
                         <div class="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-6 border border-amber-100/20">
@@ -58,8 +58,8 @@
                                     <i class="fas fa-users text-amber-700"></i>
                                 </div>
                             </div>
-                            <p class="text-2xl font-bold text-amber-500">1,234</p>
-                            <p class="text-sm text-amber-700 mt-2">+8% vs last week</p>
+                            <p class="text-2xl font-bold text-amber-500" id="active-users">-</p>
+                            <p class="text-sm text-amber-700 mt-2" id="users-increase">Loading...</p>
                         </div>
                         
                         <div class="bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-6 border border-amber-100/20">
@@ -69,8 +69,8 @@
                                     <i class="fas fa-hand-holding-heart text-amber-700"></i>
                                 </div>
                             </div>
-                            <p class="text-2xl font-bold text-amber-500">89</p>
-                            <p class="text-sm text-amber-700 mt-2">Active checkouts</p>
+                            <p class="text-2xl font-bold text-amber-500" id="borrowed-books">-</p>
+                            <p class="text-sm text-amber-700 mt-2" id="active-checkouts">Loading...</p>
                         </div>
                     </div>
                 </div>
@@ -106,6 +106,18 @@
                     </div>
                 </div>
             </a>
+            <?php else: ?>
+            <a href="/borrowers/create" class="group">
+                <div class="p-6 rounded-xl bg-white border border-amber-200 hover:border-amber-400 hover:shadow-md transition duration-300 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-50 to-orange-50 rounded-full transform translate-x-8 -translate-y-8 group-hover:scale-150 transition-transform duration-300"></div>
+                    <div class="relative flex items-center space-x-4">
+                        <div class="p-3 bg-gradient-to-br from-amber-700 to-amber-900 rounded-lg text-white">
+                            <i class="fas fa-book-reader"></i>
+                        </div>
+                        <span class="text-lg font-semibold text-amber-900 group-hover:text-amber-700">Borrow a Book</span>
+                    </div>
+                </div>
+            </a>
             <?php endif; ?>
 
             <a href="/logout" class="group">
@@ -121,5 +133,53 @@
             </a>
         </div>
     </main>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetchDashboardStatistics();
+        // Refresh stats every 30 seconds
+        setInterval(fetchDashboardStatistics, 30000);
+    });
+
+    function fetchDashboardStatistics() {
+        fetch('/dashboard/statistics')
+            .then(response => response.json())
+            .then(data => {
+                // Update Total Books
+                document.getElementById('total-books').textContent = data.total_books.count;
+                document.getElementById('books-added').textContent = 
+                    `+${data.total_books.added_this_month} this month`;
+
+                // Update Active Users
+                document.getElementById('active-users').textContent = 
+                    data.active_users.count.toLocaleString();
+                document.getElementById('users-increase').textContent = 
+                    `+${data.active_users.increase} vs last week`;
+
+                // Update Borrowed Books
+                document.getElementById('borrowed-books').textContent = 
+                    data.borrowed_books.count;
+                document.getElementById('active-checkouts').textContent = 
+                    `${data.borrowed_books.active_checkouts} active checkouts`;
+            })
+            .catch(error => {
+                console.error('Error fetching dashboard statistics:', error);
+                // Set error state in UI
+                setErrorState();
+            });
+    }
+
+    function setErrorState() {
+        const elements = ['total-books', 'active-users', 'borrowed-books'];
+        elements.forEach(id => {
+            document.getElementById(id).textContent = 'Error';
+        });
+        
+        const subElements = ['books-added', 'users-increase', 'active-checkouts'];
+        subElements.forEach(id => {
+            document.getElementById(id).textContent = 'Failed to load data';
+        });
+    }
+    </script>
 </body>
 </html>

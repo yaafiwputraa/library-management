@@ -124,4 +124,16 @@ class BooksController extends BaseController
             'borrower' => $borrower,
         ]);
     }
+
+    public function get($id)
+    {
+        $bookModel = new BookModel();
+        $book = $bookModel->find($id);
+
+        if (!$book) {
+            return $this->response->setJSON(['error' => 'Book not found'])->setStatusCode(404);
+        }
+
+        return $this->response->setJSON($book);
+    }
 }
