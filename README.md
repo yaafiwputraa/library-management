@@ -158,21 +158,3 @@ Berikut adalah beberapa endpoint utama:
     "active_users": 20
   }
   ```
-
----
-
-## **Kontribusi**  
-1. Fork repository ini.  
-2. Buat branch baru:  
-   ```bash
-   git checkout -b fitur-baru
-   ```
-3. Commit perubahan:  
-   ```bash
-   git commit -m "Menambahkan fitur baru"
-   ```
-4. Push ke branch:  
-   ```bash
-   git push origin fitur-baru
-   ```
-5. Buat Pull Request.
