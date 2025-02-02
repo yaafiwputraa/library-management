@@ -1,126 +1,178 @@
-# **Library Management System - Book Management Service**
-
-Proyek ini adalah **Book Management Service** dari sistem manajemen perpustakaan, dibangun menggunakan **CodeIgniter 4 (CI4)**. Layanan ini memungkinkan admin perpustakaan untuk mengelola koleksi buku, seperti menambahkan, mengedit, melihat, dan menghapus buku. Sistem ini juga dilengkapi autentikasi dan otorisasi untuk memastikan keamanan akses.
-
----
-
-## **Fitur**
-- **Authentication & Authorization**:
-  - Pengguna harus login untuk mengakses layanan.
-  - Hanya admin yang dapat menambah, mengedit, dan menghapus buku.
-- **Manajemen Buku**:
-  - Tambahkan, ubah, lihat, dan hapus data buku.
-  - Data buku meliputi judul, pengarang, kategori, deskripsi, dan status (*available* atau *borrowed*).
-- **Endpoint RESTful**:
-  - CRUD operasi sesuai dengan standar RESTful API.
+# **Library Management API**  
+**Sistem Manajemen Perpustakaan Berbasis API dengan CodeIgniter 4 dan MySQL**
 
 ---
 
-## **Persyaratan Sistem**
-- **PHP** versi 7.4 atau lebih baru dengan ekstensi:
-  - `pdo`, `pdo_mysql`, `mbstring`, `json`
-- **Composer** untuk pengelolaan dependensi.
-- **MySQL** sebagai database.
-- **PHP CLI server** untuk menjalankan aplikasi (tidak perlu XAMPP).
+## **Deskripsi Proyek**  
+Library Management API adalah sistem terintegrasi untuk mengelola perpustakaan digital. Sistem ini dibangun menggunakan framework **CodeIgniter 4** dan database **MySQL**. Proyek ini terdiri dari dua layanan utama:  
+1. **Book Management**: Mengelola data buku (CRUD) dan status ketersediaan.  
+2. **Borrow Management**: Mengelola proses peminjaman dan pengembalian buku.  
+
+Selain itu, sistem ini dilengkapi dengan **Dashboard Analytics** yang menampilkan statistik real-time seperti total buku, buku yang dipinjam, dan pengguna aktif.
 
 ---
 
-## **Langkah-Langkah Instalasi**
-1. **Clone Repository**
-   Clone repository ini ke komputer lokal Anda:
+## **Fitur Utama**  
+1. **Book Management**  
+   - Menambah, mengedit, menghapus, dan melihat daftar buku.  
+   - Melacak status buku (available/borrowed).  
+
+2. **Borrow Management**  
+   - Meminjam dan mengembalikan buku.  
+   - Validasi ketersediaan buku sebelum peminjaman.  
+   - Riwayat peminjaman buku.  
+
+3. **Dashboard Analytics**  
+   - Menampilkan statistik:  
+     - Total buku.  
+     - Buku yang sedang dipinjam.  
+     - Pengguna aktif.  
+
+4. **Autentikasi dan Role-Based Access Control (RBAC)**  
+   - Admin dapat mengelola buku dan peminjaman.  
+   - Pengguna biasa hanya dapat melihat daftar buku.  
+
+---
+
+## **Teknologi yang Digunakan**  
+- **Backend**: CodeIgniter 4 (PHP Framework).  
+- **Database**: MySQL.  
+- **Tools**: Git, Postman (untuk pengujian API).  
+
+---
+
+## **Struktur Database**  
+Database terdiri dari tiga tabel utama:  
+1. **`books`**: Menyimpan data buku (id, title, author, description, category, status).  
+2. **`borrowers`**: Mencatat data peminjaman (id, name, email, phone_number, id_book, borrow_date, return_date).  
+3. **`users`**: Mengelola akun pengguna (id, username, password, role).  
+
+---
+
+## **Cara Menjalankan Proyek**  
+1. **Clone Repository**  
    ```bash
-   git clone https://github.com/your-repository/library-book-management.git
-   cd library-book-management
+   git clone https://github.com/yaafiwputraa/library-management.git
+   cd library-management
    ```
 
-2. **Install Dependensi**
-   Pastikan Composer sudah terinstal, lalu jalankan:
+2. **Install Dependencies**  
+   Pastikan Composer sudah terinstall, lalu jalankan:  
    ```bash
    composer install
    ```
 
-3. **Konfigurasikan File `.env`**
-   Salin file `.env.example` menjadi `.env`:
-   ```bash
-   cp .env.example .env
-   ```
-   Kredensial database default sudah diatur untuk menggunakan database yang telah di-*deploy*. Anda tidak perlu mengubahnya kecuali jika ingin menggunakan database Anda sendiri.
+3. **Setup Database**  
+   - Buat database baru di MySQL.  
+   - Import file SQL yang disediakan (jika ada) atau jalankan migrasi:  
+     ```bash
+     php spark migrate
+     ```
 
-4. **Jalankan Server**
-   Gunakan server bawaan PHP untuk menjalankan aplikasi:
+4. **Konfigurasi Environment**  
+   - Salin file `.env.example` menjadi `.env`.  
+   - Sesuaikan konfigurasi database di file `.env`:  
+     ```env
+     database.default.hostname = localhost
+     database.default.database = nama_database
+     database.default.username = username
+     database.default.password = password
+     ```
+
+5. **Jalankan Server**  
    ```bash
    php spark serve
    ```
-   Aplikasi dapat diakses di `http://localhost:8080/books`.
+   Buka browser dan akses `http://localhost:8080`.
 
 ---
 
-## **Struktur Endpoint API**
+## **Endpoint API**  
+Berikut adalah beberapa endpoint utama:  
 
-### **Authentication**
-- `POST /authenticate` - Login pengguna.
-- `GET /logout` - Logout pengguna.
+### **Autentikasi**  
+- **POST `/authenticate`**: Login pengguna.  
+- **GET `/logout`**: Logout pengguna.  
+- **POST `/register`**: Registrasi pengguna baru.  
 
-### **Books**
-- `GET /books` - Menampilkan daftar buku.
-- `POST /books/store` - Menambahkan buku baru (*hanya admin*).
-- `GET /books/edit/{id}` - Mengedit data buku (*hanya admin*).
-- `POST /books/update/{id}` - Memperbarui data buku (*hanya admin*).
-- `DELETE /books/{id}` - Menghapus buku (*hanya admin*).
+### **Book Management**  
+- **GET `/books`**: Menampilkan semua buku.  
+- **POST `/books/store`**: Menambah buku baru (hanya admin).  
+- **PUT `/books/update/(:num)`**: Mengupdate buku (hanya admin).  
+- **DELETE `/books/(:num)`**: Menghapus buku (hanya admin).  
 
----
+### **Borrow Management**  
+- **GET `/borrowers`**: Menampilkan semua peminjaman.  
+- **POST `/borrowers`**: Meminjam buku.  
+- **POST `/borrowers/return/(:num)`**: Mengembalikan buku.  
 
-## **Contoh Request**
-### **Menghapus Buku**
-**Request:**
-```bash
-DELETE /books/1 HTTP/1.1
-Host: localhost:8080
-Authorization: Bearer <your-session-token>
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Book deleted successfully."
-}
-```
+### **Dashboard Analytics**  
+- **GET `/dashboard/statistics`**: Menampilkan statistik (hanya admin).  
 
 ---
 
-## **File yang Disertakan**
-- **Kode Aplikasi**: Semua file di folder `app/`.
-- **File Konfigurasi Penting**:
-  - `composer.json` dan `composer.lock`
-  - `.env.example`
-- **File Migrasi Database**: Terletak di `app/Database/Migrations/`.
+## **Contoh Penggunaan**  
+### **Login**  
+- **Request**:  
+  ```bash
+  POST /authenticate
+  Body: { "username": "admin", "password": "password123" }
+  ```
+- **Response**:  
+  ```json
+  {
+    "status": "success",
+    "message": "Login berhasil",
+    "data": {
+      "id": 1,
+      "username": "admin",
+      "role": "admin"
+    }
+  }
+  ```
 
-**File yang Tidak Disertakan:**
-- `.env` asli untuk melindungi informasi sensitif.
-- Folder `writable/` yang berisi log dan cache runtime.
+### **Menambah Buku**  
+- **Request**:  
+  ```bash
+  POST /books/store
+  Body: { "title": "Belajar CodeIgniter 4", "author": "John Doe", "category": "Programming" }
+  ```
+- **Response**:  
+  ```json
+  {
+    "status": "success",
+    "message": "Buku berhasil ditambahkan"
+  }
+  ```
+
+### **Melihat Statistik**  
+- **Request**:  
+  ```bash
+  GET /dashboard/statistics
+  ```
+- **Response**:  
+  ```json
+  {
+    "total_books": 150,
+    "borrowed_books": 45,
+    "active_users": 20
+  }
+  ```
 
 ---
 
-## **Akses ke Aplikasi**
-- **Database**:
-  - Host: `mysql-1e73275c-tst-01.h.aivencloud.com`
-  - Port: `21959`
-  - Nama Database: `defaultdb`
-  - Username: `avnadmin`
-  - Password: `AVNS__A_pxyQwbTPWRVRmbcF`
-- **Aplikasi Dapat Dijalankan di `http://localhost:8080`**
-
----
-
-## **Demo Video**
-Demo cara kerja aplikasi ini dapat ditemukan di YouTube:
-- [Link Video Demo](https://youtu.be/your-demo-video-link)
-
----
-
-## **Kontributor**
-- **[Muhammad Yaafi Wasesa Putra]**: Layanan Manajemen Buku
-
-
->>>>>>> 690a022f81ba0de42ddbb83229e1bcba986cc211
+## **Kontribusi**  
+1. Fork repository ini.  
+2. Buat branch baru:  
+   ```bash
+   git checkout -b fitur-baru
+   ```
+3. Commit perubahan:  
+   ```bash
+   git commit -m "Menambahkan fitur baru"
+   ```
+4. Push ke branch:  
+   ```bash
+   git push origin fitur-baru
+   ```
+5. Buat Pull Request.
